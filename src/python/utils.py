@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from collections import Counter
 
 def read_csv(path, header = None, group = True, group_index = 0):
     # read csv into pandas dataframe, grouping by id
@@ -19,7 +20,7 @@ def time_shift(df):
     ts = df.iloc[:,1]
 
     ts1 = ts[1:].values - ts[0:-1].values
-    ts1 = np.concatenate([[0], ts1])
+    ts1 = np.concatenate([[np.nan], ts1])
     ts1 = ts1/1000
     ts1 = ts1.round()
     
@@ -29,7 +30,7 @@ def time_shift(df):
     return ret
 
 
-def windows_generator(df, delta = np.timedelta64(1,'h'), ts_index = 1):
+def windows_generator(df, delta = np.timedelta64(60,'m'), ts_index = 1):
     # generate windows of given time interval
     start = df.iloc[0,ts_index]\
         .astype('datetime64[ms]')\
@@ -53,22 +54,27 @@ def windows_generator(df, delta = np.timedelta64(1,'h'), ts_index = 1):
 
         start = end
 
-def get_transmission_fequencies(df, delta = np.timedelta64(1,'h')):
+def get_transmission_frequencies(df, delta = np.timedelta64(1,'h')):
+    
     df = time_shift(df)
-
+    ret = {}
+    
     gen = windows_generator(df, delta)
 
-    ret = {}
     for start, end, window in gen:
         if len(window) == 0:
-            ret[(start, end)] = np.array()
+            ret[(start, end)] = np.array([])
         else:
             ret[(start, end)] = window[3].values
 
     return ret
 
-def plot_bars(d, ax):
-    for k in d:
-        values = d[k]
-
-        # count freq in interval
+def plot_bar(window_vals, ax, label = ''):
+    cnt = Counter(window_vals)
+    x = []
+    y = []
+    for k in cnt:
+        x.append(k)
+        y.append(cnt[k])
+    ax.bar(x, y, label = label)
+    # count freq in interval
