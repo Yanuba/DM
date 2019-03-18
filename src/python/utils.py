@@ -34,7 +34,7 @@ def windows_generator(df, delta = np.timedelta64(60,'m'), ts_index = 1):
     # generate windows of given time interval
     start = df.iloc[0,ts_index]\
         .astype('datetime64[ms]')\
-        .astype('datetime64[h]')\
+        .astype('datetime64[D]')\
         .astype('datetime64[ms]')
 
     window = []
