@@ -37,22 +37,27 @@ def windows_generator(df, delta = np.timedelta64(60,'m'), ts_index = 1):
         .astype('datetime64[h]')\
         .astype('datetime64[ms]')
 
-    k = 0
-
-    while k < len(df.values):
+    window = []
+    end = start + delta
+    for row in df.values:
         
-        window = []
+        if start.astype('int64') <= row[ts_index] < end.astype('int64'):
+            window.append(row)
         
-        end = start + delta
+        else:
+            yield start, end, pd.DataFrame(window)
+            
+            window = [row]
+            
+            start = end
+            end = start + delta
 
-        while k < len(df.values) and df.iloc[k,ts_index] < end.astype('int64'):
-            item = df.iloc[k,:]
-            window.append(item)
-            k += 1
-        
-        yield start, end, pd.DataFrame(window)
+            while not(start.astype('int64') <= row[ts_index] < end.astype('int64')):
+                yield start, end, pd.DataFrame([])
+                start = end
+                end = start + delta
 
-        start = end
+    yield start, end, pd.DataFrame(window)     
 
 def get_transmission_frequencies(df, delta = np.timedelta64(1,'h')):
     
