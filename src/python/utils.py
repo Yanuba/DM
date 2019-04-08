@@ -19,7 +19,7 @@ def time_shift(df):
     
     ts = df.iloc[:,1]
 
-    ts1 = ts[1:].values - ts[0:-1].values
+    ts1 = ts[1:].values.astype('int64') - ts[0:-1].values.astype('int64')
     ts1 = np.concatenate([[np.nan], ts1])
     ts1 = ts1/1000
     ts1 = ts1.round()
